@@ -9,8 +9,12 @@
     snap: null,
     tab: 'pipeline',
     sevFilter: 'ALL',
+    selectedSwarmId: params.get('swarmId') || '',
+    lastHostConv: '',
+    lastOptionsKey: '',
     demoMode: false,
     demoStage: 0,
+    pollTimer: null,
   };
 
   // Sync light/dark scheme from Antigravity's injected :root --background token
@@ -51,12 +55,12 @@
     error: 'Error',
   };
 
-  // Realistic 4-stage interactive demo so users can test-drive every tab immediately
+  // Fallback sample preview used ONLY when zero real swarms exist on disk
   const DEMO_STAGES = [
     {
-      label: 'Stage 1/4 — Carbon Lead Coder locks shared contracts & spawns 3 parallel subagents',
+      label: 'Sample 1/2 — Carbon Lead Coder spawns parallel workers while Argon stands by',
       snap: {
-        title: 'Duet: JWT Auth & Session Store (Demo)',
+        title: 'Duet Sample Preview (No real sessions yet)',
         phase: 'building',
         coders: [
           {
@@ -64,36 +68,27 @@
             model: 'Gemini 4 Carbon (High)',
             status: 'working',
             steps: 9,
-            activity: 'Coordinating 3 parallel subagents across auth slices',
+            activity: 'Coordinating 2 parallel workers across backend & UI slices',
             conversationId: null,
             files: [
-              { name: 'auth.types.ts', path: 'src/auth/auth.types.ts', uri: null },
-              { name: 'jwt.service.ts', path: 'src/auth/jwt.service.ts', uri: null },
-              { name: 'session.store.ts', path: 'src/auth/session.store.ts', uri: null },
+              { name: 'contracts.ts', path: 'src/shared/contracts.ts', uri: null },
+              { name: 'scanner.ts', path: 'src/server/scanner.ts', uri: null },
             ],
             subagents: [
               {
                 index: 1,
-                role: 'JWT Token Signer Author',
+                role: '@slice-backend',
                 status: 'done',
                 steps: 6,
-                activity: 'Write jwt.service.ts',
-                files: [{ name: 'jwt.service.ts', uri: null }],
+                activity: 'Write scanner.ts',
+                files: [{ name: 'scanner.ts', uri: null }],
               },
               {
                 index: 2,
-                role: 'Redis Session Store Author',
+                role: '@slice-frontend',
                 status: 'working',
                 steps: 4,
-                activity: 'Edit session.store.ts',
-                files: [{ name: 'session.store.ts', uri: null }],
-              },
-              {
-                index: 3,
-                role: 'Express Auth Middleware Author',
-                status: 'working',
-                steps: 3,
-                activity: 'Write auth.middleware.ts',
+                activity: 'Edit dashboard.ts',
                 files: [],
               },
             ],
@@ -111,153 +106,37 @@
           },
         ],
         files: [
-          { name: 'auth.types.ts', uri: null },
-          { name: 'jwt.service.ts', uri: null },
-          { name: 'session.store.ts', uri: null },
+          { name: 'contracts.ts', uri: null },
+          { name: 'scanner.ts', uri: null },
         ],
         findings: [],
         messages: [
-          { seq: 1, agent: 'coordinator', time: '12:01', text: '@coder Build JWT service, session store, and middleware using shared contracts.\n@reviewer Audit each completed slice for security and edge cases.' },
-          { seq: 2, agent: 'coder', time: '12:02', text: 'Phase 1 complete: locked shared interfaces in src/auth/auth.types.ts. Spawning 3 parallel Carbon subagents for disjoint modules.' },
+          { seq: 1, agent: 'coordinator', time: '12:01', text: '@coder Build backend scanner & UI using shared contracts.\n@reviewer Audit each completed slice.' },
         ],
-        stats: { totalSubagents: 3, activeSubagents: 2, filesTouched: 3, slicesSent: 0, feedbackRounds: 0, blockers: 0, majors: 0, nits: 0, approvedCount: 0 },
+        stats: { totalSubagents: 2, activeSubagents: 1, filesTouched: 2, slicesSent: 0, feedbackRounds: 0, blockers: 0, majors: 0, nits: 0, approvedCount: 0 },
       },
     },
     {
-      label: 'Stage 2/4 — Slice 1 streamed to Argon Reviewer while Carbon starts integration tests',
+      label: 'Sample 2/2 — Argon verifies all slices and posts [APPROVED]',
       snap: {
-        title: 'Duet: JWT Auth & Session Store (Demo)',
-        phase: 'reviewing',
-        coders: [
-          {
-            name: 'coder',
-            model: 'Gemini 4 Carbon (High)',
-            status: 'working',
-            steps: 15,
-            activity: 'Write auth.integration.test.ts (Milestone 2)',
-            conversationId: null,
-            files: [
-              { name: 'auth.types.ts', uri: null },
-              { name: 'jwt.service.ts', uri: null },
-              { name: 'session.store.ts', uri: null },
-              { name: 'auth.middleware.ts', uri: null },
-              { name: 'auth.integration.test.ts', uri: null },
-            ],
-            subagents: [
-              { index: 1, role: 'JWT Token Signer Author', status: 'done', steps: 6, activity: 'Completed slice', files: [{ name: 'jwt.service.ts', uri: null }] },
-              { index: 2, role: 'Redis Session Store Author', status: 'done', steps: 7, activity: 'Completed slice', files: [{ name: 'session.store.ts', uri: null }] },
-              { index: 3, role: 'Express Auth Middleware Author', status: 'done', steps: 5, activity: 'Completed slice', files: [{ name: 'auth.middleware.ts', uri: null }] },
-            ],
-          },
-        ],
-        reviewers: [
-          {
-            name: 'reviewer',
-            model: 'Gemini 4 Argon (High)',
-            status: 'working',
-            steps: 6,
-            activity: 'Auditing jwt.service.ts & session.store.ts + running typecheck',
-            conversationId: null,
-            subagents: [
-              { index: 1, role: 'Crypto & Token Claims Auditor', status: 'working', steps: 3, activity: 'Read jwt.service.ts', files: [] },
-            ],
-          },
-        ],
-        files: [
-          { name: 'auth.types.ts', uri: null },
-          { name: 'jwt.service.ts', uri: null },
-          { name: 'session.store.ts', uri: null },
-          { name: 'auth.middleware.ts', uri: null },
-          { name: 'auth.integration.test.ts', uri: null },
-        ],
-        findings: [],
-        messages: [
-          { seq: 1, agent: 'coordinator', time: '12:01', text: '@coder Build JWT service, session store, and middleware.\n@reviewer Audit each completed slice.' },
-          { seq: 3, agent: 'coder', time: '12:03', text: '@reviewer Milestone 1 ready (auth.types.ts, jwt.service.ts, session.store.ts, auth.middleware.ts). tsc --noEmit passed. Continuing to Milestone 2 tests in parallel.' },
-        ],
-        stats: { totalSubagents: 3, activeSubagents: 0, filesTouched: 5, slicesSent: 1, feedbackRounds: 0, blockers: 0, majors: 0, nits: 0, approvedCount: 0 },
-      },
-    },
-    {
-      label: 'Stage 3/4 — Argon flags 1 [MAJOR] security issue & 1 [NIT]; Carbon fixes immediately',
-      snap: {
-        title: 'Duet: JWT Auth & Session Store (Demo)',
-        phase: 'fixing',
-        coders: [
-          {
-            name: 'coder',
-            model: 'Gemini 4 Carbon (High)',
-            status: 'working',
-            steps: 19,
-            activity: 'Edit jwt.service.ts (pinning algorithms: ["HS256"] & clockTolerance)',
-            conversationId: null,
-            files: [
-              { name: 'auth.types.ts', uri: null },
-              { name: 'jwt.service.ts', uri: null },
-              { name: 'session.store.ts', uri: null },
-              { name: 'auth.middleware.ts', uri: null },
-              { name: 'auth.integration.test.ts', uri: null },
-            ],
-            subagents: [
-              { index: 1, role: 'JWT Token Signer Author', status: 'done', steps: 6, activity: 'Completed slice', files: [{ name: 'jwt.service.ts', uri: null }] },
-              { index: 2, role: 'Redis Session Store Author', status: 'done', steps: 7, activity: 'Completed slice', files: [{ name: 'session.store.ts', uri: null }] },
-              { index: 3, role: 'Express Auth Middleware Author', status: 'done', steps: 5, activity: 'Completed slice', files: [{ name: 'auth.middleware.ts', uri: null }] },
-            ],
-          },
-        ],
-        reviewers: [
-          {
-            name: 'reviewer',
-            model: 'Gemini 4 Argon (High)',
-            status: 'waiting',
-            steps: 9,
-            activity: 'Posted findings in #4; waiting for @coder fix',
-            conversationId: null,
-            subagents: [],
-          },
-        ],
-        files: [
-          { name: 'auth.types.ts', uri: null },
-          { name: 'jwt.service.ts', uri: null },
-          { name: 'session.store.ts', uri: null },
-          { name: 'auth.middleware.ts', uri: null },
-          { name: 'auth.integration.test.ts', uri: null },
-        ],
-        findings: [
-          { id: '4-0', seq: 4, reviewer: 'reviewer', severity: 'MAJOR', summary: 'jwt.verify() in jwt.service.ts omits explicit algorithms allowlist — pin algorithms: ["HS256"] to block alg confusion.', resolved: false, time: '12:04' },
-          { id: '4-1', seq: 4, reviewer: 'reviewer', severity: 'NIT', summary: 'Unref cleanup timer in InMemorySessionStore so test runner exits without --forceExit.', resolved: false, time: '12:04' },
-        ],
-        messages: [
-          { seq: 3, agent: 'coder', time: '12:03', text: '@reviewer Milestone 1 & 2 ready. All 14 unit + integration tests pass.' },
-          { seq: 4, agent: 'reviewer', time: '12:04', text: '@coder Reviewed #3:\n- [MAJOR] jwt.verify() in jwt.service.ts omits explicit algorithms allowlist — pin algorithms: ["HS256"] to block alg confusion.\n- [NIT] Unref cleanup timer in InMemorySessionStore so test runner exits cleanly.' },
-        ],
-        stats: { totalSubagents: 3, activeSubagents: 0, filesTouched: 5, slicesSent: 1, feedbackRounds: 1, blockers: 0, majors: 1, nits: 1, approvedCount: 0 },
-      },
-    },
-    {
-      label: 'Stage 4/4 — Argon re-verifies diff & test suite -> [APPROVED] sent to Coordinator',
-      snap: {
-        title: 'Duet: JWT Auth & Session Store (Demo)',
+        title: 'Duet Sample Preview (No real sessions yet)',
         phase: 'approved',
         coders: [
           {
             name: 'coder',
             model: 'Gemini 4 Carbon (High)',
             status: 'waiting',
-            steps: 22,
+            steps: 16,
             activity: 'All feedback resolved & tests green',
             conversationId: null,
             files: [
-              { name: 'auth.types.ts', uri: null },
-              { name: 'jwt.service.ts', uri: null },
-              { name: 'session.store.ts', uri: null },
-              { name: 'auth.middleware.ts', uri: null },
-              { name: 'auth.integration.test.ts', uri: null },
+              { name: 'contracts.ts', uri: null },
+              { name: 'scanner.ts', uri: null },
+              { name: 'dashboard.ts', uri: null },
             ],
             subagents: [
-              { index: 1, role: 'JWT Token Signer Author', status: 'done', steps: 6, activity: 'Completed slice', files: [{ name: 'jwt.service.ts', uri: null }] },
-              { index: 2, role: 'Redis Session Store Author', status: 'done', steps: 7, activity: 'Completed slice', files: [{ name: 'session.store.ts', uri: null }] },
-              { index: 3, role: 'Express Auth Middleware Author', status: 'done', steps: 5, activity: 'Completed slice', files: [{ name: 'auth.middleware.ts', uri: null }] },
+              { index: 1, role: '@slice-backend', status: 'done', steps: 6, activity: 'Completed slice', files: [{ name: 'scanner.ts', uri: null }] },
+              { index: 2, role: '@slice-frontend', status: 'done', steps: 7, activity: 'Completed slice', files: [{ name: 'dashboard.ts', uri: null }] },
             ],
           },
         ],
@@ -266,30 +145,25 @@
             name: 'reviewer',
             model: 'Gemini 4 Argon (High)',
             status: 'waiting',
-            steps: 12,
-            activity: 'Signed off [APPROVED] in #6',
+            steps: 8,
+            activity: 'Posted #3: Verified all slices & tests pass',
             conversationId: null,
             subagents: [],
           },
         ],
         files: [
-          { name: 'auth.types.ts', uri: null },
-          { name: 'jwt.service.ts', uri: null },
-          { name: 'session.store.ts', uri: null },
-          { name: 'auth.middleware.ts', uri: null },
-          { name: 'auth.integration.test.ts', uri: null },
+          { name: 'contracts.ts', uri: null },
+          { name: 'scanner.ts', uri: null },
+          { name: 'dashboard.ts', uri: null },
         ],
         findings: [
-          { id: '4-0', seq: 4, reviewer: 'reviewer', severity: 'MAJOR', summary: 'jwt.verify() in jwt.service.ts omits explicit algorithms allowlist — pin algorithms: ["HS256"].', resolved: true, time: '12:04' },
-          { id: '4-1', seq: 4, reviewer: 'reviewer', severity: 'NIT', summary: 'Unref cleanup timer in InMemorySessionStore so test runner exits cleanly.', resolved: true, time: '12:04' },
-          { id: '6-2', seq: 6, reviewer: 'reviewer', severity: 'APPROVED', summary: 'Verified #5: HS256 algorithm allowlist enforced, timer unref added, 16/16 tests pass.', resolved: false, time: '12:05' },
+          { id: '3-0', seq: 3, reviewer: 'reviewer', severity: 'APPROVED', summary: 'All slices verified against contracts and unit tests.', resolved: false, time: '12:05' },
         ],
         messages: [
-          { seq: 4, agent: 'reviewer', time: '12:04', text: '@coder Reviewed #3:\n- [MAJOR] Pin algorithms: ["HS256"] in jwt.verify().\n- [NIT] Unref cleanup timer in InMemorySessionStore.' },
-          { seq: 5, agent: 'coder', time: '12:05', text: '@reviewer Fixed both items from #4 and added regression test for alg mismatch (16/16 passing).' },
-          { seq: 6, agent: 'reviewer', time: '12:05', text: '@coordinator [APPROVED] Verified #5: HS256 algorithm allowlist enforced, timer unref added, 16/16 tests pass.' },
+          { seq: 2, agent: 'coder', time: '12:03', text: '@reviewer Milestone 1 ready; all tests pass.' },
+          { seq: 3, agent: 'reviewer', time: '12:05', text: '@coordinator [APPROVED] All slices verified against contracts and unit tests.' },
         ],
-        stats: { totalSubagents: 3, activeSubagents: 0, filesTouched: 5, slicesSent: 2, feedbackRounds: 1, blockers: 0, majors: 0, nits: 0, approvedCount: 1 },
+        stats: { totalSubagents: 2, activeSubagents: 0, filesTouched: 3, slicesSent: 1, feedbackRounds: 0, blockers: 0, majors: 0, nits: 0, approvedCount: 1 },
       },
     },
   ];
@@ -348,7 +222,7 @@
                 <div class="subagent-item">
                   <div class="sub-top">
                     <span class="sub-role">${esc(s.role)}</span>
-                    <div style="display:flex;align-items:center;gap:5px">
+                    <div class="sub-actions">
                       <span class="state-pill" data-status="${esc(s.status)}">${esc(STATUS_LABELS[s.status] || s.status)}</span>
                       ${s.conversationId ? `<button type="button" class="mini-btn" data-open-conv="${esc(s.conversationId)}">Open</button>` : ''}
                     </div>
@@ -383,9 +257,63 @@
     return esc(text).replace(/@([a-zA-Z0-9][a-zA-Z0-9_-]*)/g, '<span class="mention-tok">@$1</span>');
   }
 
+  function renderSessionBar(snap) {
+    const bar = $('session-bar');
+    const list = snap.availableSwarms || [];
+    if (!list.length || state.demoMode) {
+      bar.classList.add('hidden');
+      return;
+    }
+    bar.classList.remove('hidden');
+
+    const select = $('swarm-select');
+    const optionsKey = list
+      .map((s) => `${s.id}:${s.title}:${s.isCurrent ? 1 : 0}:${s.isLive ? 1 : 0}:${s.messageCount}`)
+      .join('|');
+
+    if (optionsKey !== state.lastOptionsKey) {
+      state.lastOptionsKey = optionsKey;
+      select.innerHTML = list
+        .map((s) => {
+          const tags = [];
+          if (s.isCurrent) tags.push('This chat');
+          else if (s.isLive) tags.push('Live');
+          const prefix = tags.length ? `[${tags.join(' · ')}] ` : '';
+          return `<option value="${esc(s.id)}">${esc(prefix + s.title)} (${s.messageCount} posts)</option>`;
+        })
+        .join('');
+    }
+    if (snap.swarm && select.value !== snap.swarm) {
+      select.value = snap.swarm;
+    }
+
+    const activeMeta = list.find((s) => s.id === snap.swarm);
+    const scopeTag = $('session-scope-tag');
+    if (activeMeta?.isCurrent) {
+      scopeTag.textContent = 'This chat';
+      scopeTag.dataset.scope = 'current';
+    } else if (activeMeta?.isLive) {
+      scopeTag.textContent = 'Active session';
+      scopeTag.dataset.scope = 'live';
+    } else {
+      scopeTag.textContent = 'Saved session';
+      scopeTag.dataset.scope = 'saved';
+    }
+
+    const coordBtn = $('btn-open-coord');
+    if (snap.swarm) {
+      coordBtn.dataset.openConv = snap.swarm;
+      coordBtn.classList.remove('hidden');
+    } else {
+      coordBtn.classList.add('hidden');
+    }
+  }
+
   function renderSnapshot(snap) {
     $('standby-view').classList.add('hidden');
     $('dashboard-view').classList.remove('hidden');
+
+    renderSessionBar(snap);
 
     $('duet-title').textContent = snap.title || 'Duet Session';
     const phase = snap.phase || 'idle';
@@ -408,6 +336,7 @@
     if (snap.files && snap.files.length) {
       $('files-footer').classList.remove('hidden');
       $('all-files-list').innerHTML = snap.files
+        .slice(0, 36)
         .map((f) => {
           const attrs = f.uri ? `data-file-uri="${esc(f.uri)}" title="Open ${esc(f.path || f.name)}"` : '';
           return `<button type="button" class="file-chip" ${attrs}>${esc(f.name)}</button>`;
@@ -433,9 +362,9 @@
             (f) => `
           <article class="finding-card">
             <div class="finding-head">
-              <div style="display:flex;align-items:center;gap:6px">
+              <div class="finding-meta">
                 <span class="sev-badge" data-sev="${esc(f.severity)}">${esc(f.severity)}</span>
-                <span style="font-size:11.5px;color:var(--du-fg-muted)">@${esc(f.reviewer)}</span>
+                <span class="meta-muted">@${esc(f.reviewer)}</span>
                 ${f.resolved ? '<span class="resolved-tag">Resolved</span>' : ''}
               </div>
               <button type="button" class="seq-btn" data-jump-seq="${esc(f.seq)}">#${esc(f.seq)}</button>
@@ -457,7 +386,7 @@
           <article class="post-card" data-post-seq="${esc(m.seq)}">
             <div class="post-head">
               <span class="worker-name">@${esc(m.agent)}</span>
-              <span style="font-size:11px;color:var(--du-fg-muted)">#${esc(m.seq)}${m.time ? ` · ${esc(m.time)}` : ''}</span>
+              <span class="meta-muted">#${esc(m.seq)}${m.time ? ` · ${esc(m.time)}` : ''}</span>
             </div>
             <p class="post-body">${formatPostBody(m.text)}</p>
           </article>`
@@ -504,6 +433,12 @@
     }
   });
 
+  $('swarm-select').addEventListener('change', (e) => {
+    state.selectedSwarmId = e.target.value || '';
+    state.etag = '';
+    triggerPollImmediate();
+  });
+
   $('btn-start-demo').addEventListener('click', () => {
     state.demoMode = true;
     state.demoStage = 0;
@@ -529,14 +464,33 @@
   // Live Polling Loop
   const currentConv = () => window.sidecar?.conversationId || params.get('conversationId') || '';
 
+  function triggerPollImmediate() {
+    if (state.pollTimer) {
+      clearTimeout(state.pollTimer);
+      state.pollTimer = null;
+    }
+    poll();
+  }
+
   async function poll() {
     const conv = currentConv();
+    if (conv && conv !== state.lastHostConv) {
+      if (state.lastHostConv) {
+        // User switched chat tabs — allow auto-following if the new tab owns a swarm
+        state.selectedSwarmId = '';
+        state.etag = '';
+      }
+      state.lastHostConv = conv;
+    }
+
     let nextDelay = POLL_IDLE_MS;
     try {
       const f = window.sidecar?.fetch ? window.sidecar.fetch.bind(window.sidecar) : fetch;
       const qs = new URLSearchParams();
       if (conv) qs.set('conversationId', conv);
+      if (state.selectedSwarmId) qs.set('swarmId', state.selectedSwarmId);
       if (state.etag) qs.set('etag', state.etag);
+
       const res = await f(`/api/duet?${qs.toString()}`, { method: 'GET' });
       if (res.ok) {
         const data = await res.json();
@@ -549,7 +503,6 @@
           }
         } else {
           nextDelay = POLL_LIVE_MS;
-          // Auto-switch out of demo the instant a real swarm starts in this conversation!
           if (state.demoMode) {
             state.demoMode = false;
             $('demo-bar').classList.add('hidden');
@@ -558,13 +511,16 @@
             state.etag = data.etag || '';
             state.snap = data;
             renderSnapshot(data);
+          } else if (state.snap && data.availableSwarms) {
+            state.snap.availableSwarms = data.availableSwarms;
+            renderSessionBar(state.snap);
           }
         }
       }
     } catch {
       // Keep current state quietly during transient restarts
     }
-    setTimeout(poll, nextDelay);
+    state.pollTimer = setTimeout(poll, nextDelay);
   }
 
   poll();

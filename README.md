@@ -21,9 +21,9 @@ User (/duet <task>)
 
 Duet ships with a native Antigravity Auxiliary Pane UI (`sidecars/dashboard/`) that visualizes what the default Swarm Board cannot:
 
-- **Carbon Build Lane + Live Subagent Tree**: Automatically inspects `@coder`'s transcript in real time to render every parallel subagent (`invoke_subagent`), its current tool call, step count, and clickable modified file chips.
-- **Argon Verification Shield**: Tracks `[BLOCKER]`, `[MAJOR]`, `[NIT]`, and `[APPROVED]` review gates across milestones, automatically marking findings as resolved once re-verified.
-- **Interactive Demo Preview**: Includes a built-in 4-stage interactive simulation so you can preview the full pipeline before running your first `/duet` session.
+- **Cross-Tab Real Session Discovery & Switcher**: Automatically streams the current conversation's Swarm or falls back to your most recently active real Swarm on disk, with a live header dropdown to switch between active and saved Duet/Swarm sessions.
+- **Carbon Build Lane + Unified Parallel Worker Tree**: Inspects transcripts and `members.json` in real time to nest both parallel Swarm child helpers (`added_by`) and `invoke_subagent` subagents, surfacing live tool calls, step counts, and clickable modified file chips.
+- **Argon Verification Shield**: Extracts `[BLOCKER]`, `[MAJOR]`, `[NIT]`, and `[APPROVED]` review gates across milestones, automatically marking earlier findings as resolved once re-verified.
 
 Enable the **Duet** UI sidecar from the plugin page in **Customizations > Installed > Duet** (or open **Duet** from the `+` panel menu in the conversation header).
 

@@ -10,16 +10,16 @@ description: >-
 
 # Duet — Parallel Lead-Coder & Independent Reviewer Workflow (`/duet`)
 
-Orchestrate a high-throughput **Lead Author + Parallel Subagents (`gemini-4-carbon-high`) ↔ Independent Verifier (`gemini-4-argon-high`)** pipeline using Antigravity's native Swarm so multi-file coding and rigorous verification run concurrently without file or lockfile collisions.
+Orchestrate a high-throughput **Lead Author + Parallel Workers (`gemini-4-carbon-high`) ↔ Independent Verifier (`gemini-4-argon-high`)** pipeline using Antigravity's native Swarm so multi-file coding and rigorous verification run concurrently without file or lockfile collisions.
 
 ## Decision Tree: Topology Sizing
 
 Before spawning workers, inspect the request scope and pick the leanest topology that maximizes speed without file conflicts:
 
 - **Small Scope (1 file or tightly coupled function refactor)**
-  - Spawn `1` `@coder` (`gemini-4-carbon-high`, edits directly without subagents) + `1` `@reviewer` (`gemini-4-argon-high`).
+  - Spawn `1` `@coder` (`gemini-4-carbon-high`, edits directly without child workers) + `1` `@reviewer` (`gemini-4-argon-high`).
 - **Medium Scope (≥ 2 independent files/components in one codebase)**
-  - Spawn `1` Lead `@coder` (`gemini-4-carbon-high`, defines shared contracts first, then fans out parallel subagents per file group) + `1` `@reviewer` (`gemini-4-argon-high`, streams reviews per completed batch).
+  - Spawn `1` Lead `@coder` (`gemini-4-carbon-high`, defines shared contracts first, then fans out parallel child workers per file group) + `1` `@reviewer` (`gemini-4-argon-high`, streams reviews per completed batch).
 - **Large Scope (multiple independent subsystems, e.g., Backend + Frontend + CLI)**
   - Spawn domain Lead Coders (e.g., `backend`, `frontend` pinned to `gemini-4-carbon-high`, with `workspace: "share"` if builds/tests collide) + `1` `@reviewer` per 2–4 coders (`gemini-4-argon-high`).
 
@@ -46,7 +46,7 @@ Because `post_message`, `read_board`, and `swarm_wait` become available on the t
      "action": "add",
      "name": "coder",
      "model": "gemini-4-carbon-high",
-     "brief": "You are the Duet Lead Coder running on Gemini 4 Carbon. Spec & Goal: <full self-contained spec, target files, constraints>. Follow the 3-Phase Parallel Protocol:\n1) CONTRACTS FIRST: When the task spans >=2 independent files/modules, define shared types/interfaces/schemas and install any required dependencies ONCE yourself first so lockfiles and contracts are settled.\n2) PARALLEL SUBAGENTS: For >=2 disjoint file groups, spawn parallel subagents in one turn via invoke_subagent(TypeName='self', Model='inherit') — they automatically inherit your model. Assign STRICT disjoint file ownership ('ONLY edit <files>, NEVER touch other files or run package installs/git mutations') and point them to the shared contracts from Phase 1. (Skip subagents for single-file edits.)\n3) INTEGRATE & STREAM TO REVIEWER: After subagents return, run build/typecheck yourself to verify clean integration, then post a milestone summary + changed files + test command tagging @reviewer on the board, while immediately continuing to the next milestone in disjoint files. Never edit files currently under @reviewer inspection until @reviewer replies. If @reviewer reports [BLOCKER]/[MAJOR] issues across disjoint files, fan out parallel subagents again to fix them rapidly."
+     "brief": "You are the Duet Lead Coder running on Gemini 4 Carbon. Spec & Goal: <full self-contained spec, target files, constraints>. Follow the 3-Phase Parallel Protocol:\n1) CONTRACTS FIRST: When the task spans >=2 independent files/modules, define shared types/interfaces/schemas and install any required dependencies ONCE yourself first so lockfiles and contracts are settled.\n2) PARALLEL CHILD WORKERS: For >=2 disjoint file groups, spawn parallel child workers in one turn via swarm(action='add', name='slice-<k>', brief='...') leaving model unset so they automatically inherit Gemini 4 Carbon. Assign STRICT disjoint file ownership ('ONLY edit <files>, NEVER touch other files or run package installs/git mutations'), point them to Phase 1 shared contracts, and instruct them to report back ONLY to @coder and call swarm_wait. (Skip child workers for single-file edits.)\n3) INTEGRATE & STREAM TO REVIEWER: After child workers report back, terminate finished child workers via swarm(action='kill', name='slice-<k>'), run build/typecheck/tests yourself to verify clean integration, then post a milestone summary + changed files + test command tagging @reviewer on the board, while immediately continuing to the next milestone in disjoint files. Never edit files currently under @reviewer inspection until @reviewer replies. If @reviewer reports [BLOCKER]/[MAJOR] issues across disjoint files, fan out parallel child workers again to fix them rapidly."
    }
    ```
 3. **Spawn the Independent Reviewer(s) (`gemini-4-argon-high`)**:
@@ -56,7 +56,7 @@ Because `post_message`, `read_board`, and `swarm_wait` become available on the t
      "name": "reviewer",
      "model": "gemini-4-argon-high",
      "workspace": "inherit",
-     "brief": "You are the Duet Independent Reviewer & Verifier running on Gemini 4 Argon. Spec & Quality Bar: <full acceptance criteria>. Strictly READ-ONLY on project source files: NEVER edit files owned by @coder. Whenever @coder tags you for a completed slice/milestone, inspect diffs and cross-module contracts, run tests/typechecks/linters, and audit correctness, edge cases, security, and maintainability. For large multi-file batches, you may spawn parallel read-only 'research' subagents (Model='inherit') to audit separate files concurrently. Reply directly to @coder with [BLOCKER], [MAJOR], or [NIT] findings citing board #seq numbers. Do NOT wake @coordinator on intermediate rounds — tag @coordinator with [APPROVED] only when all slices pass verification (or escalate if blocked on a product decision)."
+     "brief": "You are the Duet Independent Reviewer & Verifier running on Gemini 4 Argon. Spec & Quality Bar: <full acceptance criteria>. Strictly READ-ONLY on project source files: NEVER edit files owned by @coder. Whenever @coder tags you for a completed slice/milestone, inspect diffs and cross-module contracts, run tests/typechecks/linters, and audit correctness, edge cases, security, and maintainability. For large multi-file batches, you may spawn parallel read-only child helpers via swarm(action='add', name='audit-<k>', brief='Strictly READ-ONLY... report ONLY to @reviewer') and kill them once reported. Reply directly to @coder with [BLOCKER], [MAJOR], or [NIT] findings citing board #seq numbers. Do NOT wake @coordinator on intermediate rounds — tag @coordinator with [APPROVED] only when all slices pass verification (or escalate if blocked on a product decision)."
    }
    ```
 4. **Spawn `monitor` / `narrator`** if available in `<skills>`, display `open_board` on its own line, surface `[Duet](sidecar://duet/dashboard/)` if the `duet/dashboard` UI sidecar is enabled and running, briefly summarize how Duet split the task, and end Turn 1.

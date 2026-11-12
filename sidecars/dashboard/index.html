@@ -9,8 +9,8 @@
 </head>
 <body>
   <div class="shell">
-    <!-- Standby state shown when current conversation has not launched /duet yet -->
-    <section id="standby-view" class="standby">
+    <!-- Standby state shown ONLY when zero Swarms exist anywhere on the machine -->
+    <section id="standby-view" class="standby hidden">
       <div class="standby-head">
         <svg class="brand-mark" width="28" height="28" viewBox="0 0 256 256" fill="none" aria-hidden="true">
           <rect x="20" y="20" width="216" height="216" rx="48" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.22" stroke-width="8"/>
@@ -22,16 +22,16 @@
         <h1 class="standby-title">Duet pipeline monitor</h1>
       </div>
       <p class="standby-desc">
-        Watches this conversation in real time and visualizes Lead Coder subagents (Gemini 4 Carbon) alongside independent verification gates (Gemini 4 Argon).
+        Streams real-time telemetry from your Duet &amp; Swarm sessions — tracking Carbon Lead Coders, parallel child workers, and Argon Reviewer verification gates.
       </p>
       <div class="cmd-box">/duet Build feature X across parallel modules</div>
       <div class="standby-foot">
-        <span class="watch-status">Listening for an active swarm in this chat…</span>
-        <button id="btn-start-demo" type="button" class="primary-btn">Preview interactive demo</button>
+        <span class="watch-status">No active swarm sessions found on this machine yet…</span>
+        <button id="btn-start-demo" type="button" class="mini-btn">Preview sample layout</button>
       </div>
     </section>
 
-    <!-- Active Dashboard (Live Swarm or Interactive Preview) -->
+    <!-- Active Dashboard (Real Swarm Telemetry) -->
     <div id="dashboard-view" class="hidden">
       <header class="top-header">
         <div class="brand-row">
@@ -51,8 +51,16 @@
           </span>
         </div>
 
+        <!-- Real Swarm Session Switcher -->
+        <div id="session-bar" class="session-bar hidden">
+          <label for="swarm-select" class="session-lbl">Session</label>
+          <select id="swarm-select" class="session-select" aria-label="Select active Duet or Swarm session"></select>
+          <span id="session-scope-tag" class="scope-tag">Live</span>
+          <button id="btn-open-coord" type="button" class="mini-btn" title="Open coordinator chat">Coordinator</button>
+        </div>
+
         <div id="demo-bar" class="demo-bar hidden">
-          <span id="demo-step-label">Interactive preview mode</span>
+          <span id="demo-step-label">Sample layout preview</span>
           <div class="demo-actions">
             <button id="btn-demo-next" type="button" class="mini-btn">Next stage</button>
             <button id="btn-demo-exit" type="button" class="mini-btn">Exit preview</button>
@@ -62,7 +70,7 @@
         <div class="kpi-strip">
           <div class="kpi-cell">
             <span id="kpi-subagents" class="kpi-val">0</span>
-            <span class="kpi-lbl">Subagents spawned</span>
+            <span class="kpi-lbl">Parallel workers</span>
           </div>
           <div class="kpi-cell">
             <span id="kpi-files" class="kpi-val">0</span>
@@ -103,7 +111,7 @@
             <!-- Carbon Build Lane -->
             <section class="lane lane-carbon" aria-label="Carbon build lane">
               <div class="lane-head">
-                <h2 class="lane-title">Lead coder &amp; subagents</h2>
+                <h2 class="lane-title">Lead coder &amp; parallel workers</h2>
                 <span class="lane-tag">Carbon build</span>
               </div>
               <div id="coders-list"></div>
