@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <linearGradient id="duetBg" x1="32" y1="32" x2="224" y2="224" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="coderStream" x1="72" y1="72" x2="176" y2="168" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="reviewerStream" x1="88" y1="96" x2="188" y2="188" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ~11% transparent margin around 256x256 canvas for clean Marketplace framing on light & dark themes -->
+  <rect x="28" y="28" width="200" height="200" rx="46" fill="url(#duetBg)" stroke="#475569" stroke-width="4"/>
+
+  <!-- Carbon Stream: Lead Coder + parallel fan-out tracks forming the left spine & upper arc of "D" -->
+  <path d="M84 78V178" stroke="url(#coderStream)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M84 78H126C156.928 78 182 100.386 182 128" stroke="url(#coderStream)" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="84" cy="78" r="9" fill="#BAE6FD"/>
+  <circle cx="84" cy="128" r="7" fill="#38BDF8"/>
+
+  <!-- Argon Stream: Independent Verifier arc completing the lower Duet loop + verification check -->
+  <path d="M182 128C182 155.614 156.928 178 126 178H108" stroke="url(#reviewerStream)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M120 128L134 142L160 114" stroke="#34D399" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

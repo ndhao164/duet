@@ -1,0 +1,27 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "duet",
+  "displayName": "Duet",
+  "version": "1.0.0",
+  "description": "Parallel Lead-Coder and Reviewer workflow via Swarm: Lead Coder spawns parallel subagents to build fast while an independent Reviewer verifies every slice.",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Use /duet to implement a multi-file feature in parallel with continuous code review",
+    "Run /duet to refactor this module across parallel subagents and verify all tests",
+    "Start /duet to build and audit a new API endpoint end-to-end"
+  ],
+  "author": {
+    "name": "ndhao164",
+    "url": "https://github.com/ndhao164"
+  },
+  "repository": "https://github.com/ndhao164/duet",
+  "license": "MIT",
+  "keywords": [
+    "duet",
+    "swarm",
+    "parallel",
+    "code-review",
+    "multi-agent",
+    "workflow"
+  ]
+}
