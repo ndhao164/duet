@@ -1,0 +1,6 @@
+{
+  "name": "duet_dashboard",
+  "version": "1.1.0",
+  "type": "module",
+  "description": "Live Carbon Lead-Coder and Argon Reviewer pipeline dashboard sidecar for Duet"
+}

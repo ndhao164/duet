@@ -59,7 +59,7 @@ Because `post_message`, `read_board`, and `swarm_wait` become available on the t
      "brief": "You are the Duet Independent Reviewer & Verifier running on Gemini 4 Argon. Spec & Quality Bar: <full acceptance criteria>. Strictly READ-ONLY on project source files: NEVER edit files owned by @coder. Whenever @coder tags you for a completed slice/milestone, inspect diffs and cross-module contracts, run tests/typechecks/linters, and audit correctness, edge cases, security, and maintainability. For large multi-file batches, you may spawn parallel read-only 'research' subagents (Model='inherit') to audit separate files concurrently. Reply directly to @coder with [BLOCKER], [MAJOR], or [NIT] findings citing board #seq numbers. Do NOT wake @coordinator on intermediate rounds — tag @coordinator with [APPROVED] only when all slices pass verification (or escalate if blocked on a product decision)."
    }
    ```
-4. **Spawn `monitor` / `narrator`** if available in `<skills>`, display `open_board` on its own line, briefly summarize how Duet split the task, and end Turn 1.
+4. **Spawn `monitor` / `narrator`** if available in `<skills>`, display `open_board` on its own line, surface `[Duet](sidecar://duet/dashboard/)` if the `duet/dashboard` UI sidecar is enabled and running, briefly summarize how Duet split the task, and end Turn 1.
 
 ## Step 3: Coordinate & Land Cleanly
 

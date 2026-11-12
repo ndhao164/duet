@@ -1,12 +1,12 @@
 # Duet
 
-**Duet** is a parallel multi-model coding and verification plugin for **Google Antigravity**. By invoking `/duet`, Antigravity orchestrates a Swarm pairing **Gemini 4 Carbon** (acting as Lead Coder with parallel subagents) and **Gemini 4 Argon** (acting as an independent, read-only Code Reviewer & Verifier).
+**Duet** is a parallel multi-model coding and verification plugin for **Google Antigravity**, bundled with a **real-time Split-Lane UI Dashboard**. By invoking `/duet`, Antigravity orchestrates a Swarm pairing **Gemini 4 Carbon** (acting as Lead Coder with parallel subagents) and **Gemini 4 Argon** (acting as an independent, read-only Code Reviewer & Verifier).
 
 ## How Duet Works
 
 ```text
 User (/duet <task>)
- └── Coordinator (Swarm Board)
+ └── Coordinator (Swarm Board + Duet Dashboard UI)
       ├── @coder (Gemini 4 Carbon High — Lead Coder)
       │    ├── Phase 1: Lock shared types/interfaces & dependencies once
       │    ├── Phase 2: Fan out parallel Carbon subagents across disjoint files
@@ -17,11 +17,15 @@ User (/duet <task>)
            └── [APPROVED] sign-off -> @coordinator
 ```
 
-### Key Features
+## Live Duet Dashboard (Bundled UI Sidecar)
 
-- **Zero Merge Collisions**: Shared interfaces and package installs happen once upfront before parallel subagents touch strictly disjoint file slices; `@reviewer` is strictly read-only on source files.
-- **Pipelined Throughput**: As soon as `@coder` finishes Milestone 1, `@reviewer` audits and tests it concurrently while `@coder` builds Milestone 2.
-- **Adaptive Topology**: Automatically scales down to a lean 2-agent loop on single-file tasks to conserve quota, or scales out to multiple domain Lead Coders + Reviewers on large multi-subsystem tasks.
+Duet ships with a native Antigravity Auxiliary Pane UI (`sidecars/dashboard/`) that visualizes what the default Swarm Board cannot:
+
+- **Carbon Build Lane + Live Subagent Tree**: Automatically inspects `@coder`'s transcript in real time to render every parallel subagent (`invoke_subagent`), its current tool call, step count, and clickable modified file chips.
+- **Argon Verification Shield**: Tracks `[BLOCKER]`, `[MAJOR]`, `[NIT]`, and `[APPROVED]` review gates across milestones, automatically marking findings as resolved once re-verified.
+- **Interactive Demo Preview**: Includes a built-in 4-stage interactive simulation so you can preview the full pipeline before running your first `/duet` session.
+
+Enable the **Duet** UI sidecar from the plugin page in **Customizations > Installed > Duet** (or open **Duet** from the `+` panel menu in the conversation header).
 
 ## Installation
 
@@ -31,11 +35,10 @@ Install directly from GitHub with the Antigravity CLI:
 agy plugin install https://github.com/ndhao164/duet
 ```
 
-Or install from a local clone:
+Or install the standalone skill via the Agent Skills CLI:
 
 ```bash
-agy plugin validate --strict ./duet
-agy plugin install ./duet
+npx skills add ndhao164/duet -g
 ```
 
 ## Usage
@@ -45,8 +48,6 @@ Type `/duet` followed by your feature, refactor, or bugfix specification in any 
 ```text
 /duet Build a JWT authentication middleware, user session store, and integration tests
 ```
-
-You can also customize model tiers inline if desired (for example, requesting medium effort for faster iterations).
 
 ## License
 

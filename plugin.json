@@ -2,8 +2,8 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "duet",
   "displayName": "Duet",
-  "version": "1.0.0",
-  "description": "Parallel Lead-Coder and Reviewer workflow via Swarm: Lead Coder spawns parallel subagents to build fast while an independent Reviewer verifies every slice.",
+  "version": "1.1.0",
+  "description": "Parallel Lead-Coder and Reviewer workflow with a live split-lane Dashboard: Carbon spawns parallel subagents to build while Argon verifies every slice.",
   "logo": "assets/logo.svg",
   "suggestedPrompts": [
     "Use /duet to implement a multi-file feature in parallel with continuous code review",
@@ -21,6 +21,7 @@
     "swarm",
     "parallel",
     "code-review",
+    "dashboard",
     "multi-agent",
     "workflow"
   ]
